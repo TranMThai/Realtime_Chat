@@ -1,9 +1,9 @@
-import ChatComponent from './components/ChatComponent'
+import AppRoutes from "./routes/AppRoutes"
 
 function App() {
 
   return (
-    <ChatComponent />
+    <AppRoutes />
   )
 }
 

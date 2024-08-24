@@ -14,19 +14,15 @@ const ChatComponent: React.FC = () => {
     const [user, setUsername] = useState<string>("user");
 
     useEffect(() => {
-        // Prompt for username only once when the component mounts
         const username = prompt("Nhập tên") || "user";
         setUsername(username);
     }, []);
 
     useEffect(() => {
-        // Create WebSocket connection
         const sock = new SockJS('http://localhost:8080/message');
         const stompClient = new Client({
             webSocketFactory: () => sock as WebSocket,
-            debug: (str) => console.log(str),
             onConnect: () => {
-                // Subscribe to the topic
                 stompClient.subscribe('/topic/public', (message: IMessage) => {
                     console.log('Received message:', message.body);
                     setMessages(prevMessages => [...prevMessages, JSON.parse(message.body)]);
@@ -51,7 +47,7 @@ const ChatComponent: React.FC = () => {
     const sendMessage = (msg: string) => {
         if (client && client.connected) {
             client.publish({
-                destination: '/app/chat.sendMessage',
+                destination: '/app/chat.public',
                 body: JSON.stringify({ type: 'CHAT', content: msg, sender: user }),
             });
         }
