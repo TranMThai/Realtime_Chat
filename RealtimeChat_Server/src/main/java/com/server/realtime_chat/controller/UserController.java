@@ -40,7 +40,7 @@ public class UserController {
             ){
         return ApiResponse
                 .builder()
-                .result(create(request))
+                .result(userService.create(request))
                 .build();
     }
 }

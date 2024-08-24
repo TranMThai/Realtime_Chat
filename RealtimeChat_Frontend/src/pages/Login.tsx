@@ -1,14 +1,35 @@
 import React, { useState } from 'react';
 import { Box, Button, TextField, Typography } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { callAuthenticate } from '../api/AuthApi';
+import { saveToken } from '../services/TokenService';
+import User from '../types/User';
 
 const Login: React.FC = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    
+    const navigate = useNavigate();
+    const [user, setUser] = useState<User>({
+        username: '',
+        password: ''
+    });
 
-    const handleLogin = () => {
-        // Handle login logic here
-        console.log("Email:", email);
-        console.log("Password:", password);
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setUser({
+            ...user,
+            [name]: value
+        });
+    };
+
+    const handleLogin = async () => {
+        try {
+            const res = await callAuthenticate(user);
+            saveToken(res.result.token);
+            navigate('/chat');
+        } catch (error) {
+            console.error('Login failed:', error);
+            // You could add a message to inform the user about the failure
+        }
     };
 
     return (
@@ -27,21 +48,23 @@ const Login: React.FC = () => {
                 Login
             </Typography>
             <TextField
-                label="Email"
+                label="Username"
+                name="username"
                 variant="outlined"
                 fullWidth
                 margin="normal"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={user.username}
+                onChange={handleChange}
             />
             <TextField
                 label="Password"
+                name="password"
                 variant="outlined"
                 type="password"
                 fullWidth
                 margin="normal"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={user.password}
+                onChange={handleChange}
             />
             <Button
                 variant="contained"

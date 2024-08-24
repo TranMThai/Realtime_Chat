@@ -1,24 +1,38 @@
 import React, { useState } from 'react';
 import { Box, Button, TextField, Typography } from '@mui/material';
+import { callCreateUser } from '../api/UserApi';
+import User from '../types/User';
+
+interface IConfirmPassword {
+    confirmPassword: string
+}
 
 const Register: React.FC = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+    const [user, setUser] = useState<User & IConfirmPassword>({
+        name: '',
+        username: '',
+        password: '',
+        confirmPassword: ''
+    });
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const {name, value} = e.target
+        setUser({
+            ...user,
+            [name]: value
+        })
+    }
 
     const handleRegister = () => {
-        if (password !== confirmPassword) {
-            alert("Passwords do not match!");
-            return;
+        if (user.password == user.confirmPassword) {
+            callCreateUser(user)
         }
-        console.log("Email:", email);
-        console.log("Password:", password);
     };
 
     return (
         <Box
             sx={{
-                width: 300,
+                width: 500,
                 margin: '0 auto',
                 mt: 8,
                 padding: 4,
@@ -31,30 +45,42 @@ const Register: React.FC = () => {
                 Register
             </Typography>
             <TextField
-                label="Email"
+                label="Username"
+                name="username"
                 variant="outlined"
                 fullWidth
                 margin="normal"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={user.username}
+                onChange={handleChange}
             />
             <TextField
                 label="Password"
+                name="password"
                 variant="outlined"
                 type="password"
                 fullWidth
                 margin="normal"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={user.password}
+                onChange={handleChange}
             />
             <TextField
                 label="Confirm Password"
+                name='confirmPassword'
                 variant="outlined"
                 type="password"
                 fullWidth
                 margin="normal"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={user.confirmPassword}
+                onChange={handleChange}
+            />
+            <TextField
+                label="Name"
+                name="name"
+                variant="outlined"
+                fullWidth
+                margin="normal"
+                value={user.name}
+                onChange={handleChange}
             />
             <Button
                 variant="contained"

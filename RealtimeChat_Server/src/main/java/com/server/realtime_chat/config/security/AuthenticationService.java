@@ -62,7 +62,7 @@ public class AuthenticationService {
                         Instant.now().plus(100, ChronoUnit.HOURS).toEpochMilli()
                 ))
                 .claim("user_id", user.getId())
-                .claim("scope", "User")
+                .claim("scope", "user")
                 .build();
 
         Payload payload = new Payload(claimsSet.toJSONObject());

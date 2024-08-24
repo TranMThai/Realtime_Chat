@@ -1,6 +1,11 @@
 import { Box, Button, TextField } from '@mui/material';
 
 const MessageInput: React.FC = () => {
+
+    const handleSend = () => {
+        console.log("send")
+    }
+
     return (
         <Box display="flex" sx={{
             p: 2,
@@ -17,6 +22,7 @@ const MessageInput: React.FC = () => {
             />
             <Button
                 color="primary"
+                onClick={handleSend}
             >
                 <i className="fa-solid fa-paper-plane"
                     style={{
