@@ -18,7 +18,6 @@ const MessageInput: React.FC<IProps> = ({client}) => {
             client.publish({
                 destination: '/app/chat.public',
                 body: JSON.stringify({
-                    type: 'CHAT',
                     content: content,
                     idSender: user.id
                 })
