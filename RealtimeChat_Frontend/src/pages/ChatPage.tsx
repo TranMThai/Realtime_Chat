@@ -4,18 +4,19 @@ import {
 } from '@mui/material';
 import { jwtDecode } from 'jwt-decode';
 import React, { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { callFindUserById } from '../api/UserApi';
 import ChatArea from '../components/ChatArea';
 import Sidebar from '../components/Sidebar';
-import UserReducer from '../redux/reducer/UserReducer';
+import UserReducer, { userSelector } from '../redux/reducer/UserReducer';
 import { getToken } from '../services/TokenService';
 
 const ChatApp: React.FC = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const user = useSelector(userSelector);
 
   useEffect(() => {
     const token = getToken();
@@ -26,7 +27,6 @@ const ChatApp: React.FC = () => {
           const res = await callFindUserById(user_id);
           if (res && res.result) {
             dispatch(UserReducer.actions.setUser(res.result));
-            console.log('chat page')
           } else {
             console.error('User not found');
           }
@@ -40,18 +40,20 @@ const ChatApp: React.FC = () => {
     }
   }, [dispatch, navigate]);
 
-  return (
-    <Box sx={{ height: '100vh', display: 'flex' }}>
-      <Grid container>
-        <Grid item xs={3}>
-          <Sidebar />
+  if (user) {
+    return (
+      <Box sx={{ height: '100vh', display: 'flex' }}>
+        <Grid container>
+          <Grid item xs={3}>
+            <Sidebar />
+          </Grid>
+          <Grid item xs={9}>
+            <ChatArea />
+          </Grid>
         </Grid>
-        <Grid item xs={9}>
-          <ChatArea />
-        </Grid>
-      </Grid>
-    </Box>
-  );
+      </Box>
+    );
+  }
 };
 
 export default ChatApp;

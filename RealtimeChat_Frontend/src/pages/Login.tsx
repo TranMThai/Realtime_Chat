@@ -6,7 +6,7 @@ import { saveToken } from '../services/TokenService';
 import User from '../types/User';
 
 const Login: React.FC = () => {
-    
+
     const navigate = useNavigate();
     const [user, setUser] = useState<User>({
         username: '',
@@ -28,9 +28,13 @@ const Login: React.FC = () => {
             navigate('/chat');
         } catch (error) {
             console.error('Login failed:', error);
-            // You could add a message to inform the user about the failure
         }
     };
+
+    window.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter')
+            handleLogin()
+    })
 
     return (
         <Box

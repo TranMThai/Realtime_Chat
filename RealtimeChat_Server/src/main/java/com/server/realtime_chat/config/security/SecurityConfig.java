@@ -26,7 +26,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(req -> req
                 .requestMatchers(Endpoints.PUBLIC_ENDPOINTS).permitAll()
                 .requestMatchers(HttpMethod.POST, Endpoints.PUBLIC_POST_ENDPOINTS).permitAll()
-                .requestMatchers(Endpoints.AUTHOR_ENDPOINTS).authenticated());
+                .requestMatchers(Endpoints.AUTHOR_ENDPOINTS).permitAll());
 
         http.oauth2ResourceServer(oauth2 ->
                 oauth2.jwt(jwtConfigurer ->

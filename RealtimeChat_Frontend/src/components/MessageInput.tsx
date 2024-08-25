@@ -1,9 +1,30 @@
 import { Box, Button, TextField } from '@mui/material';
+import { Client } from '@stomp/stompjs';
+import { useSelector } from 'react-redux';
+import { userSelector } from '../redux/reducer/UserReducer';
+import { useState } from 'react';
 
-const MessageInput: React.FC = () => {
+interface IProps {
+    client: Client | null
+}
+
+const MessageInput: React.FC<IProps> = ({client}) => {
+
+    const user = useSelector(userSelector)
+    const [content, setContent] = useState<string>('')
 
     const handleSend = () => {
-        console.log("send")
+        if(client && client.connected && content.trim().length>0){
+            client.publish({
+                destination: '/app/chat.public',
+                body: JSON.stringify({
+                    type: 'CHAT',
+                    content: content,
+                    idSender: user.id
+                })
+            })
+            setContent('')
+        }
     }
 
     return (
@@ -16,9 +37,11 @@ const MessageInput: React.FC = () => {
                 variant="outlined"
                 placeholder="Write your message..."
                 fullWidth
+                value={content}
                 sx={{
                     mr: 3
                 }}
+                onChange={(e)=>setContent(e.target.value)}
             />
             <Button
                 color="primary"

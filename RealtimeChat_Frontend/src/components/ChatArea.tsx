@@ -1,19 +1,47 @@
 import { Avatar, Box, Paper, Typography } from '@mui/material';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { userSelector } from '../redux/reducer/UserReducer';
 import MessageInput from './MessageInput';
+import Message from '../types/Message';
+import SockJS from 'sockjs-client';
+import api from '../constants/BaseUrl';
+import { Client, IMessage } from '@stomp/stompjs';
+import { getToken } from '../services/TokenService';
 
 const ChatArea: React.FC = () => {
 
     const user = useSelector(userSelector)
+    const [client, setClient] = useState<Client | null>(null);
+    const [messages, setMessages] = useState<Message[]>([])
 
-    const messages = [
-        { sender: 3, text: "Hi Jordan! How are you?" },
-        { sender: 2, text: "Hi Nancy, I'm good! How about you?" },
-    ];
+    useEffect(() => {
+        const sock = new SockJS(`${api}/api/message`);
 
-    console.log(user)
+        const stompClient = new Client({
+            webSocketFactory: () => sock as WebSocket,
+            onConnect: () => {
+                stompClient.subscribe('/topic/public', (message: IMessage) => {
+                    setMessages(prevMessage => [
+                        ...prevMessage,
+                        JSON.parse(message.body)
+                    ]);
+                });
+            },
+            connectHeaders: {
+                Authorization: `Bearer ${getToken()}`
+            }
+        });
+
+        stompClient.activate();
+        setClient(stompClient);
+
+        return () => {
+            if (stompClient) {
+                stompClient.deactivate();
+            }
+        };
+    }, []);
 
     if (user)
         return (
@@ -40,24 +68,24 @@ const ChatArea: React.FC = () => {
                         <Box
                             key={index}
                             display="flex"
-                            justifyContent={msg.sender == user.id ? 'flex-end' : 'flex-start'}
+                            justifyContent={msg.idSender == user.id ? 'flex-end' : 'flex-start'}
                             sx={{ mb: 1 }}
                         >
-                            {!(msg.sender == user.id) &&
-                                <Avatar src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSDbWRPBPM4LtL75LUJPlQ8GUriUF14c33j6g&s' />
+                            {!(msg.idSender == user.id) &&
+                                <Avatar />
                             }
                             <Paper
                                 sx={{
                                     p: 1.5,
                                     m: 1,
-                                    backgroundColor: msg.sender == user.id ? '#3A99D9' : '#C9E0F7',
-                                    color: msg.sender == user.id ? '#fff' : '#000',
+                                    backgroundColor: msg.idSender == user.id ? '#3A99D9' : '#C9E0F7',
+                                    color: msg.idSender == user.id ? '#fff' : '#000',
                                     maxWidth: 750,
                                     wordBreak: 'break-word',
                                 }}
                             >
                                 <Typography variant="body2">
-                                    {msg.text}
+                                    {msg.content}
                                 </Typography>
                             </Paper>
                         </Box>
@@ -73,7 +101,9 @@ const ChatArea: React.FC = () => {
                         boxSizing: 'border-box',
                     }}
                 >
-                    <MessageInput />
+                    <MessageInput
+                        client={client}
+                    />
                 </Box>
             </Box>
         );
