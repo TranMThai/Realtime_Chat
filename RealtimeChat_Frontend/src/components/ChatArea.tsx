@@ -6,7 +6,7 @@ import MessageInput from './MessageInput';
 import Message from '../types/Message';
 import SockJS from 'sockjs-client';
 import api from '../constants/BaseUrl';
-import { Client, IMessage } from '@stomp/stompjs';
+import { Client, IMessage, Stomp } from '@stomp/stompjs';
 import { getToken } from '../services/TokenService';
 
 const ChatArea: React.FC = () => {
@@ -16,22 +16,22 @@ const ChatArea: React.FC = () => {
     const [messages, setMessages] = useState<Message[]>([])
 
     useEffect(() => {
-        const sock = new SockJS(`${api}/api/message`);
+        const socket = new SockJS(`${api}/api/message`);
+        const stompClient = Stomp.over(socket);
 
-        const stompClient = new Client({
-            webSocketFactory: () => sock as WebSocket,
-            onConnect: () => {
+        stompClient.connect(
+            {
+                Authorization: `Bearer ${getToken()}`
+            },
+            () => {
                 stompClient.subscribe('/topic/public', (message: IMessage) => {
                     setMessages(prevMessage => [
                         ...prevMessage,
                         JSON.parse(message.body)
-                    ]);
-                });
-            },
-            connectHeaders: {
-                Authorization: `Bearer ${getToken()}`
+                    ])
+                })
             }
-        });
+        );
 
         stompClient.activate();
         setClient(stompClient);
