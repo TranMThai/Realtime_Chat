@@ -1,5 +1,6 @@
 package com.server.realtime_chat.mapper;
 
+import com.server.realtime_chat.dto.request.ChatRoomRequest;
 import com.server.realtime_chat.dto.response.ChatRoomResponse;
 import com.server.realtime_chat.entity.ChatRoom;
 import org.mapstruct.Mapper;
@@ -14,4 +15,6 @@ public interface ChatRoomMapper {
                 .nameReceiver(nameReceiver)
                 .build();
     }
+
+    ChatRoom toEntity(ChatRoomRequest request);
 }

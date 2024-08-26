@@ -2,6 +2,7 @@ package com.server.realtime_chat.service.impl;
 
 import com.server.realtime_chat.config.exception.AppException;
 import com.server.realtime_chat.config.exception.ErrorCode;
+import com.server.realtime_chat.dto.request.ChatRoomRequest;
 import com.server.realtime_chat.dto.response.ChatRoomResponse;
 import com.server.realtime_chat.entity.ChatRoom;
 import com.server.realtime_chat.mapper.ChatRoomMapper;
@@ -11,10 +12,12 @@ import com.server.realtime_chat.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -22,8 +25,8 @@ import java.util.List;
 public class ChatRoomServiceImpl implements ChatRoomService {
 
     ChatRoomRepository chatRoomRepository;
-    UserService userService;
     ChatRoomMapper chatRoomMapper;
+    UserService userService;
 
     @Override
     public ChatRoom findById(Long id) {
@@ -50,7 +53,17 @@ public class ChatRoomServiceImpl implements ChatRoomService {
     }
 
     @Override
-    public ChatRoom create(ChatRoom entity) {
-        return chatRoomRepository.save(entity);
+    public ChatRoomResponse create(ChatRoomRequest request) {
+        var anyRoom = chatRoomRepository.findAll().stream()
+                .filter(cr -> cr.getIdUsers().containsAll(request.getIdUsers()))
+                .findAny();
+        if (anyRoom.isPresent()) {
+            throw new AppException(ErrorCode.DUPLICATE_CHAT_ROOM);
+        }
+        ChatRoom entity = chatRoomMapper.toEntity(request);
+        ChatRoom save = chatRoomRepository.save(entity);
+        ChatRoomResponse response = chatRoomMapper.toDto(save, null);
+        return response;
     }
+
 }

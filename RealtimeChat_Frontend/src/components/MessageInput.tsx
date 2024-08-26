@@ -26,6 +26,11 @@ const MessageInput: React.FC<IProps> = ({client, selectedRoom}) => {
             setContent('')
         }
     }
+    
+    window.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter')
+            handleSend()
+    })
 
     return (
         <Box display="flex" sx={{

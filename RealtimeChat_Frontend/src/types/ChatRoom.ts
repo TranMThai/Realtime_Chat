@@ -1,7 +1,7 @@
 type ChatRoom = {
-    id: number,
+    id?: number,
     idUsers: number[],
-    nameReceiver: string
+    nameReceiver?: string
 }
 
 export default ChatRoom

@@ -11,8 +11,8 @@ public enum ErrorCode {
     NOT_FOUND(404, "not found", HttpStatus.NOT_FOUND),
     DUPLICATE_EMAIL(400, "duplicate email", HttpStatus.BAD_REQUEST),
     AUTHENTICATION_FAILED(401, "Authentication failed", HttpStatus.BAD_REQUEST),
-    SIGN_FAILED(500, "sign failed", HttpStatus.SERVICE_UNAVAILABLE)
-    ;
+    SIGN_FAILED(500, "sign failed", HttpStatus.SERVICE_UNAVAILABLE),
+    DUPLICATE_CHAT_ROOM(400, "duplicate chat room", HttpStatus.BAD_REQUEST);
 
     private final int code;
 

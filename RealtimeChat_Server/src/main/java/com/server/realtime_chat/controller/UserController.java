@@ -24,22 +24,30 @@ public class UserController {
 
     UserService userService;
 
+    @GetMapping
+    public ApiResponse<?> findAll() {
+        return ApiResponse.builder()
+                .result(userService.findAll())
+                .build();
+    }
+
     @GetMapping("/{id}")
-    public ApiResponse<?> findById(
-            @PathVariable(name = "id") Integer id
-    ){
-        return ApiResponse
-                .builder()
+    public ApiResponse<?> findById(@PathVariable(name = "id") Integer id) {
+        return ApiResponse.builder()
                 .result(userService.findById(id))
                 .build();
     }
 
+    @GetMapping("/without/{id}")
+    public ApiResponse<?> findAllUsersWithoutRoomWithIdUser(@PathVariable(name = "id") Integer id) {
+        return ApiResponse.builder()
+                .result(userService.findAllUsersWithoutRoomWithIdUser(id))
+                .build();
+    }
+
     @PostMapping
-    public ApiResponse<?> create(
-            @RequestBody UserRequestCreate request
-            ){
-        return ApiResponse
-                .builder()
+    public ApiResponse<?> create(@RequestBody UserRequestCreate request) {
+        return ApiResponse.builder()
                 .result(userService.create(request))
                 .build();
     }

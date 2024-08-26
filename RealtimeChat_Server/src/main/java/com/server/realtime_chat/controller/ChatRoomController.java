@@ -1,5 +1,6 @@
 package com.server.realtime_chat.controller;
 
+import com.server.realtime_chat.dto.request.ChatRoomRequest;
 import com.server.realtime_chat.dto.response.ApiResponse;
 import com.server.realtime_chat.service.ChatRoomService;
 import com.server.realtime_chat.service.MessageService;
@@ -9,8 +10,12 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @CrossOrigin("*")
 @RestController
@@ -33,6 +38,13 @@ public class ChatRoomController {
     public ApiResponse<?> findAllMessageByIdRoom(@PathVariable(name = "id") Long id){
         return ApiResponse.builder()
                 .result(messageService.findAllMessageByIdRoom(id))
+                .build();
+    }
+
+    @PostMapping
+    public ApiResponse<?> createRoom(@RequestBody ChatRoomRequest request){
+        return ApiResponse.builder()
+                .result(chatRoomService.create(request))
                 .build();
     }
 }
