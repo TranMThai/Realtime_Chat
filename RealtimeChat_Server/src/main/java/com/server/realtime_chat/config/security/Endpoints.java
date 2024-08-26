@@ -12,7 +12,8 @@ public class Endpoints {
 
     public static final String[] AUTHOR_ENDPOINTS = {
             "/api/users/**",
-            "/api/message/**"
+            "/api/message/**",
+            "/api/chat_room/**"
     };
 
 }

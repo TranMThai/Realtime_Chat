@@ -1,37 +1,49 @@
 import { Avatar, Box, Paper, Typography } from '@mui/material';
+import { Client, IMessage } from '@stomp/stompjs';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { userSelector } from '../redux/reducer/UserReducer';
-import MessageInput from './MessageInput';
-import Message from '../types/Message';
 import SockJS from 'sockjs-client';
+import { callFindAllMessageByIdRoom } from '../api/ChatRoomApi';
 import api from '../constants/BaseUrl';
-import { Client, IMessage, Stomp } from '@stomp/stompjs';
+import { userSelector } from '../redux/reducer/UserReducer';
 import { getToken } from '../services/TokenService';
+import Message from '../types/Message';
+import MessageInput from './MessageInput';
 
-const ChatArea: React.FC = () => {
+interface IProps {
+    selectedRoom: number | string
+}
+
+const ChatArea: React.FC<IProps> = ({ selectedRoom }) => {
 
     const user = useSelector(userSelector)
     const [client, setClient] = useState<Client | null>(null);
     const [messages, setMessages] = useState<Message[]>([])
 
-    useEffect(() => {
-        const socket = new SockJS(`${api}/api/message`);
-        const stompClient = Stomp.over(socket);
+    const fetchAllMessageByIdRoom = async () => {
+        const {result} = await callFindAllMessageByIdRoom(selectedRoom + "")
+        setMessages([...result])
+    }
 
-        stompClient.connect(
-            {
-                Authorization: `Bearer ${getToken()}`
-            },
-            () => {
-                stompClient.subscribe('/topic/public', (message: IMessage) => {
+    useEffect(() => {
+        
+        fetchAllMessageByIdRoom()
+
+        const sock = new SockJS(`${api}/api/message`);
+        const stompClient = new Client({
+            webSocketFactory: () => sock as WebSocket,
+            onConnect: () => {
+                stompClient.subscribe(`/room/${selectedRoom}`, (message: IMessage) => {
                     setMessages(prevMessage => [
                         ...prevMessage,
                         JSON.parse(message.body)
-                    ])
-                })
+                    ]);
+                });
+            },
+            connectHeaders: {
+                Authorization: `Bearer ${getToken()}`
             }
-        );
+        });
 
         stompClient.activate();
         setClient(stompClient);
@@ -41,7 +53,8 @@ const ChatArea: React.FC = () => {
                 stompClient.deactivate();
             }
         };
-    }, []);
+    }, [selectedRoom]);
+
 
     if (user)
         return (
@@ -103,6 +116,7 @@ const ChatArea: React.FC = () => {
                 >
                     <MessageInput
                         client={client}
+                        selectedRoom={selectedRoom}
                     />
                 </Box>
             </Box>

@@ -10,7 +10,8 @@ import org.springframework.http.HttpStatusCode;
 public enum ErrorCode {
     NOT_FOUND(404, "not found", HttpStatus.NOT_FOUND),
     DUPLICATE_EMAIL(400, "duplicate email", HttpStatus.BAD_REQUEST),
-    AUTHENTICATION_FAILED(400, "Authentication failed", HttpStatus.BAD_REQUEST)
+    AUTHENTICATION_FAILED(401, "Authentication failed", HttpStatus.BAD_REQUEST),
+    SIGN_FAILED(500, "sign failed", HttpStatus.SERVICE_UNAVAILABLE)
     ;
 
     private final int code;

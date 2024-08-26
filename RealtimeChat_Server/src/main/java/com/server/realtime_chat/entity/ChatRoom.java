@@ -1,5 +1,8 @@
 package com.server.realtime_chat.entity;
 
+import com.server.realtime_chat.common.converter.IntegerListConverter;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,9 +27,9 @@ public class ChatRoom {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Integer idFirstSender;
-
-    private Integer idSecondSender;
+    @Convert(converter = IntegerListConverter.class)
+    @Column(columnDefinition = "json")
+    private List<Integer> idUsers;
 
     @OneToMany(mappedBy = "chatRoom")
     private List<Message> messages;

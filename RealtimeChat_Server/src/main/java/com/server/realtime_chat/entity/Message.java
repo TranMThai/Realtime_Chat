@@ -1,5 +1,6 @@
 package com.server.realtime_chat.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -28,6 +29,7 @@ public class Message {
 
     private String content;
 
+    @JsonIgnore
     @JoinColumn(name = "id_room")
     @ManyToOne
     private ChatRoom chatRoom;

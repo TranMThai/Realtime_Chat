@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { Box, Button, TextField, Typography } from '@mui/material';
 import { callCreateUser } from '../api/UserApi';
 import User from '../types/User';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface IConfirmPassword {
     confirmPassword: string
 }
 
 const Register: React.FC = () => {
+    const navigate = useNavigate()
     const [user, setUser] = useState<User & IConfirmPassword>({
         name: '',
         username: '',
@@ -16,7 +18,7 @@ const Register: React.FC = () => {
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const {name, value} = e.target
+        const { name, value } = e.target
         setUser({
             ...user,
             [name]: value
@@ -26,13 +28,14 @@ const Register: React.FC = () => {
     const handleRegister = () => {
         if (user.password == user.confirmPassword) {
             callCreateUser(user)
+            navigate('/login')
         }
     };
 
     return (
         <Box
             sx={{
-                width: 500,
+                maxWidth: 500,
                 margin: '0 auto',
                 mt: 8,
                 padding: 4,
@@ -87,10 +90,24 @@ const Register: React.FC = () => {
                 color="primary"
                 fullWidth
                 onClick={handleRegister}
-                sx={{ mt: 2 }}
+                sx={{ my: 3 }}
             >
                 Register
             </Button>
+            <Box
+                mb={2}
+            >
+                <Link to='/login'>
+                    <Typography
+                        sx={{
+                            color: 'blue',
+                            float: 'right'
+                        }}
+                    >
+                        Already have account?
+                    </Typography>
+                </Link>
+            </Box>
         </Box>
     );
 };

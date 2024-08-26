@@ -5,10 +5,11 @@ import { userSelector } from '../redux/reducer/UserReducer';
 import { useState } from 'react';
 
 interface IProps {
-    client: Client | null
+    client: Client | null,
+    selectedRoom: number | string
 }
 
-const MessageInput: React.FC<IProps> = ({client}) => {
+const MessageInput: React.FC<IProps> = ({client, selectedRoom}) => {
 
     const user = useSelector(userSelector)
     const [content, setContent] = useState<string>('')
@@ -16,7 +17,7 @@ const MessageInput: React.FC<IProps> = ({client}) => {
     const handleSend = () => {
         if(client && client.connected && content.trim().length>0){
             client.publish({
-                destination: '/app/chat.public',
+                destination: `/app/chat.sendMessage/${selectedRoom}`,
                 body: JSON.stringify({
                     content: content,
                     idSender: user.id

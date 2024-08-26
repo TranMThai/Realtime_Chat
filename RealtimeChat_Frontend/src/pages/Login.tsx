@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Box, Button, TextField, Typography } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { callAuthenticate } from '../api/AuthApi';
 import { saveToken } from '../services/TokenService';
 import User from '../types/User';
@@ -39,7 +39,7 @@ const Login: React.FC = () => {
     return (
         <Box
             sx={{
-                width: 300,
+                maxWidth: 500,
                 margin: '0 auto',
                 mt: 8,
                 padding: 4,
@@ -75,10 +75,24 @@ const Login: React.FC = () => {
                 color="primary"
                 fullWidth
                 onClick={handleLogin}
-                sx={{ mt: 2 }}
+                sx={{ my: 3 }}
             >
                 Login
             </Button>
+            <Box
+                mb={1}
+            >
+                <Link to='/register'>
+                    <Typography
+                        sx={{
+                            color: 'blue',
+                            float: 'right'
+                        }}
+                    >
+                        Don't have account?
+                    </Typography>
+                </Link>
+            </Box>
         </Box>
     );
 };

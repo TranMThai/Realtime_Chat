@@ -1,5 +1,7 @@
 package com.server.realtime_chat.config.security;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -16,18 +18,23 @@ import com.server.realtime_chat.dto.request.AuthenticationRequest;
 import com.server.realtime_chat.dto.response.AuthenticationResponse;
 import com.server.realtime_chat.entity.User;
 import com.server.realtime_chat.repository.UserRepository;
+import com.server.realtime_chat.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.spec.SecretKeySpec;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Base64;
 import java.util.Date;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -75,7 +82,7 @@ public class AuthenticationService {
             jwsObject.sign(new MACSigner(key.getBytes()));
             return jwsObject.serialize();
         } catch (JOSEException e) {
-            return null;
+            throw new AppException(ErrorCode.SIGN_FAILED);
         }
     }
 
@@ -90,6 +97,26 @@ public class AuthenticationService {
 
             return verified && expiryTime.after(new Date());
         } catch (JOSEException | ParseException e) {
+            throw new AppException(ErrorCode.AUTHENTICATION_FAILED);
+        }
+    }
+
+    public User decodeToUser(String token) {
+        try {
+            if(!introspect(token)) {
+                throw new AppException(ErrorCode.AUTHENTICATION_FAILED);
+            }
+
+            String[] chunks = token.split("\\.");
+            Base64.Decoder decoder = Base64.getUrlDecoder();
+            String payload = new String(decoder.decode(chunks[1]));
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, Object> map = objectMapper.readValue(payload, Map.class);
+            Integer idUser = (Integer) map.get("user_id");
+            User user = userRepository.findById(idUser).get();
+            return user;
+        } catch (Exception e) {
             throw new AppException(ErrorCode.AUTHENTICATION_FAILED);
         }
     }
