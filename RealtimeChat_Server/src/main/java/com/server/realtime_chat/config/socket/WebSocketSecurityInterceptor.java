@@ -55,9 +55,9 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
     private void isUserInRoom(StompHeaderAccessor accessor) {
         try {
             String idRoom = accessor.getFirstNativeHeader("idRoom");
-            String idUser = accessor.getFirstNativeHeader("idUser");
+            String token = accessor.getFirstNativeHeader("token");
             ChatRoom chatRoom = chatRoomRepository.findById(Long.valueOf(idRoom)).get();
-            User user = userRepository.findById(Integer.valueOf(idUser)).get();
+            User user = authenticationService.decodeToUser(token);
             if(!chatRoom.getIdUsers().contains(user.getId())){
                 throw new AppException(ErrorCode.USER_NOT_IN_ROOM);
             }

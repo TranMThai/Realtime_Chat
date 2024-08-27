@@ -3,6 +3,7 @@ import { Client } from '@stomp/stompjs';
 import { useSelector } from 'react-redux';
 import { userSelector } from '../redux/reducer/UserReducer';
 import { useState } from 'react';
+import { getToken } from '../services/TokenService';
 
 interface IProps {
     client: Client | null,
@@ -24,17 +25,18 @@ const MessageInput: React.FC<IProps> = ({ client, selectedRoom }) => {
                 }),
                 headers: {
                     idRoom: selectedRoom + "",
-                    idUser: user.id + ""
+                    token: getToken() + ""
                 }
             })
             setContent('')
         }
     }
 
-    window.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter')
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === 'Enter') {
             handleSend()
-    })
+        }
+    }
 
     return (
         <Box display="flex" sx={{
@@ -51,6 +53,7 @@ const MessageInput: React.FC<IProps> = ({ client, selectedRoom }) => {
                     mr: 3
                 }}
                 onChange={(e) => setContent(e.target.value)}
+                onKeyDown={handleKeyDown}
             />
             <Button
                 color="primary"

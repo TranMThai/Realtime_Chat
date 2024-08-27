@@ -42,7 +42,7 @@ const ChatArea: React.FC<IProps> = ({ selectedRoom }) => {
                 },
                     {
                         idRoom: selectedRoom + "",
-                        idUser: user.id + ""
+                        token: getToken() + ""
                     });
             },
             onStompError: (frame) => {

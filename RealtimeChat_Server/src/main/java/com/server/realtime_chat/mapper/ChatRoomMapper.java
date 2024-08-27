@@ -13,11 +13,19 @@ public interface ChatRoomMapper {
                 .id(entity.getId())
                 .idUsers(entity.getIdUsers())
                 .nameReceiver(nameReceiver)
-                .lastMessage(entity.getMessages()
-                        .get(entity.getMessages().size() - 1)
-                        .getContent())
+                .lastMessage(getLastMessage(entity))
                 .build();
     }
 
     ChatRoom toEntity(ChatRoomRequest request);
+
+    default String getLastMessage(ChatRoom entity) {
+        int size = entity.getMessages().size();
+        if (size > 0) {
+            return entity.getMessages()
+                    .get(entity.getMessages().size() - 1)
+                    .getContent();
+        }
+        return null;
+    }
 }
