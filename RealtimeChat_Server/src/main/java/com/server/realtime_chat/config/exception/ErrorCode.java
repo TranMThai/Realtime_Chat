@@ -12,7 +12,9 @@ public enum ErrorCode {
     DUPLICATE_EMAIL(400, "duplicate email", HttpStatus.BAD_REQUEST),
     AUTHENTICATION_FAILED(401, "Authentication failed", HttpStatus.BAD_REQUEST),
     SIGN_FAILED(500, "sign failed", HttpStatus.SERVICE_UNAVAILABLE),
-    DUPLICATE_CHAT_ROOM(400, "duplicate chat room", HttpStatus.BAD_REQUEST);
+    DUPLICATE_CHAT_ROOM(400, "duplicate chat room", HttpStatus.BAD_REQUEST),
+    USER_NOT_IN_ROOM(400, "this user not in this room", HttpStatus.BAD_REQUEST)
+    ;
 
     private final int code;
 

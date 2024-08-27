@@ -9,24 +9,28 @@ interface IProps {
     selectedRoom: number | string
 }
 
-const MessageInput: React.FC<IProps> = ({client, selectedRoom}) => {
+const MessageInput: React.FC<IProps> = ({ client, selectedRoom }) => {
 
     const user = useSelector(userSelector)
     const [content, setContent] = useState<string>('')
 
     const handleSend = () => {
-        if(client && client.connected && content.trim().length>0){
+        if (client && client.connected && content.trim().length > 0) {
             client.publish({
                 destination: `/app/chat.sendMessage/${selectedRoom}`,
                 body: JSON.stringify({
                     content: content,
                     idSender: user.id
-                })
+                }),
+                headers: {
+                    idRoom: selectedRoom + "",
+                    idUser: user.id + ""
+                }
             })
             setContent('')
         }
     }
-    
+
     window.addEventListener('keypress', (e) => {
         if (e.key === 'Enter')
             handleSend()
@@ -46,7 +50,7 @@ const MessageInput: React.FC<IProps> = ({client, selectedRoom}) => {
                 sx={{
                     mr: 3
                 }}
-                onChange={(e)=>setContent(e.target.value)}
+                onChange={(e) => setContent(e.target.value)}
             />
             <Button
                 color="primary"

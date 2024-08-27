@@ -6,6 +6,7 @@ import com.server.realtime_chat.config.security.AuthenticationService;
 import com.server.realtime_chat.entity.ChatRoom;
 import com.server.realtime_chat.entity.User;
 import com.server.realtime_chat.repository.ChatRoomRepository;
+import com.server.realtime_chat.repository.UserRepository;
 import com.server.realtime_chat.service.ChatRoomService;
 import com.server.realtime_chat.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,8 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
     AuthenticationService authenticationService;
     @Autowired
     ChatRoomRepository chatRoomRepository;
+    @Autowired
+    UserRepository userRepository;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -35,12 +38,32 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
                 throw new AppException(ErrorCode.AUTHENTICATION_FAILED);
             }
         }
+        if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
+            isUserInRoom(accessor);
+        }
+        if (StompCommand.SEND.equals(accessor.getCommand())) {
+            isUserInRoom(accessor);
+        }
 
         return message;
     }
 
     private String removeBearer(String token) {
         return token.replaceFirst("Bearer ", "");
+    }
+
+    private void isUserInRoom(StompHeaderAccessor accessor) {
+        try {
+            String idRoom = accessor.getFirstNativeHeader("idRoom");
+            String idUser = accessor.getFirstNativeHeader("idUser");
+            ChatRoom chatRoom = chatRoomRepository.findById(Long.valueOf(idRoom)).get();
+            User user = userRepository.findById(Integer.valueOf(idUser)).get();
+            if(!chatRoom.getIdUsers().contains(user.getId())){
+                throw new AppException(ErrorCode.USER_NOT_IN_ROOM);
+            }
+        }catch (Exception e) {
+            throw new AppException(ErrorCode.AUTHENTICATION_FAILED);
+        }
     }
 
 }

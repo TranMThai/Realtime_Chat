@@ -1,6 +1,6 @@
 import { Avatar, Box, Paper, Typography } from '@mui/material';
 import { Client, IMessage } from '@stomp/stompjs';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import SockJS from 'sockjs-client';
 import { callFindAllMessageByIdRoom } from '../api/ChatRoomApi';
@@ -19,14 +19,15 @@ const ChatArea: React.FC<IProps> = ({ selectedRoom }) => {
     const user = useSelector(userSelector)
     const [client, setClient] = useState<Client | null>(null);
     const [messages, setMessages] = useState<Message[]>([])
+    const chatBoxRef = useRef<HTMLElement>(null);
 
     const fetchAllMessageByIdRoom = async () => {
-        const {result} = await callFindAllMessageByIdRoom(selectedRoom + "")
+        const { result } = await callFindAllMessageByIdRoom(selectedRoom + "")
         setMessages([...result])
     }
 
     useEffect(() => {
-        
+
         fetchAllMessageByIdRoom()
 
         const sock = new SockJS(`${api}/api/message`);
@@ -38,7 +39,11 @@ const ChatArea: React.FC<IProps> = ({ selectedRoom }) => {
                         ...prevMessage,
                         JSON.parse(message.body)
                     ]);
-                });
+                },
+                    {
+                        idRoom: selectedRoom + "",
+                        idUser: user.id + ""
+                    });
             },
             connectHeaders: {
                 Authorization: `Bearer ${getToken()}`
@@ -54,6 +59,12 @@ const ChatArea: React.FC<IProps> = ({ selectedRoom }) => {
             }
         };
     }, [selectedRoom]);
+
+    useEffect(() => {
+        if (chatBoxRef.current) {
+            chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+        }
+    }, [messages])
 
 
     if (user)
@@ -71,6 +82,7 @@ const ChatArea: React.FC<IProps> = ({ selectedRoom }) => {
                 }}
             >
                 <Box
+                    ref={chatBoxRef}
                     sx={{
                         flexGrow: 1,
                         overflowY: 'auto',
