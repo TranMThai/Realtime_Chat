@@ -83,7 +83,7 @@ const Sidebar: React.FC<IProps> = ({ setSelectedRoom }) => {
                             sx={{
                                 mr: 1
                             }} />
-                        <ListItemText primary={cr.nameReceiver} secondary={`Hello`} />
+                        <ListItemText primary={cr.nameReceiver} secondary={cr.lastMessage} />
                     </ListItem>
                 ))}
 

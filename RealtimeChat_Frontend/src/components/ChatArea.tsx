@@ -45,6 +45,12 @@ const ChatArea: React.FC<IProps> = ({ selectedRoom }) => {
                         idUser: user.id + ""
                     });
             },
+            onStompError: (frame) => {
+                console.log("Lỗi stomp: ", frame)
+            },
+            onWebSocketError: (event) => {
+                console.log('Lỗi WebSocket: ', event);
+            },
             connectHeaders: {
                 Authorization: `Bearer ${getToken()}`
             }

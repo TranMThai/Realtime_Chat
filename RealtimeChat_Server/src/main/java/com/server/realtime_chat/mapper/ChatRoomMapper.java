@@ -13,6 +13,9 @@ public interface ChatRoomMapper {
                 .id(entity.getId())
                 .idUsers(entity.getIdUsers())
                 .nameReceiver(nameReceiver)
+                .lastMessage(entity.getMessages()
+                        .get(entity.getMessages().size() - 1)
+                        .getContent())
                 .build();
     }
 

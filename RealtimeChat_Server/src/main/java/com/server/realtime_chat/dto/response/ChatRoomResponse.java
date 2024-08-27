@@ -19,4 +19,6 @@ public class ChatRoomResponse {
 
     private String nameReceiver;
 
+    private String lastMessage;
+
 }
