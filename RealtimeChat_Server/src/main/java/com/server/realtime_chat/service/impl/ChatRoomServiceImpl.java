@@ -13,18 +13,18 @@ import com.server.realtime_chat.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.messaging.MessageDeliveryException;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class ChatRoomServiceImpl implements ChatRoomService {
 
+    SimpMessagingTemplate messagingTemplate;
     ChatRoomRepository chatRoomRepository;
     ChatRoomMapper chatRoomMapper;
     MessageRepository messageRepository;
@@ -64,8 +64,27 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         }
         ChatRoom entity = chatRoomMapper.toEntity(request);
         ChatRoom save = chatRoomRepository.save(entity);
+        realtime(request.getIdUsers());
         ChatRoomResponse response = chatRoomMapper.toDto(save, null, messageRepository.coutUnSeenMessageByIdRoom(entity.getId()));
         return response;
+    }
+
+    @Override
+    public void seenAllByIdRoom(Long id) {
+        chatRoomRepository.seenAllByIdRoom(id);
+        List<Integer> idUsers = findById(id).getIdUsers();
+        realtime(idUsers);
+    }
+
+    private void realtime(List<Integer> idUsers) {
+        try {
+            for (Integer idUser : idUsers) {
+                String url = "/user/" + idUser;
+                List<ChatRoomResponse> responses = findAllByIdUser(idUser);
+                messagingTemplate.convertAndSend(url, responses);
+            }
+        } catch (MessageDeliveryException e) {
+        }
     }
 
 }

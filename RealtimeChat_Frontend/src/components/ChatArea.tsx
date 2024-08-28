@@ -3,15 +3,15 @@ import { Client, IMessage } from '@stomp/stompjs';
 import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import SockJS from 'sockjs-client';
-import { callFindAllMessageByIdRoom } from '../api/ChatRoomApi';
-import api from '../constants/BaseUrl';
+import { callFindAllMessageByIdRoom, callSeenAllByIdRoom } from '../api/ChatRoomApi';
+import { socketChatApi } from '../constants/BaseUrl';
 import { userSelector } from '../redux/reducer/UserReducer';
 import { getToken } from '../services/TokenService';
 import Message from '../types/Message';
 import MessageInput from './MessageInput';
 
 interface IProps {
-    selectedRoom: number | string
+    selectedRoom: number
 }
 
 const ChatArea: React.FC<IProps> = ({ selectedRoom }) => {
@@ -28,36 +28,47 @@ const ChatArea: React.FC<IProps> = ({ selectedRoom }) => {
         }
     }
 
+    const seenAll = async () => {
+        try {
+            await callSeenAllByIdRoom(selectedRoom);
+        } catch (error) {
+            console.error("Error marking messages as seen:", error);
+        }
+    };
+    console.log(selectedRoom)
     useEffect(() => {
+        if (selectedRoom > 0) {
 
-        fetchAllMessageByIdRoom()
+            fetchAllMessageByIdRoom()
+            seenAll()
 
-        const sock = new SockJS(`${api}/api/chat`);
-        const stompClient = new Client({
-            webSocketFactory: () => sock as WebSocket,
-            onConnect: () => {
-                stompClient.subscribe(`/room/${selectedRoom}`, (message: IMessage) => {
-                    setMessages(prevMessage => [
-                        ...prevMessage,
-                        JSON.parse(message.body)
-                    ]);
+            const sock = new SockJS(`${socketChatApi}`);
+            const stompClient = new Client({
+                webSocketFactory: () => sock as WebSocket,
+                onConnect: () => {
+                    stompClient.subscribe(`/room/${selectedRoom}`, (message: IMessage) => {
+                        setMessages(prevMessage => [
+                            ...prevMessage,
+                            JSON.parse(message.body)
+                        ])
+                    },
+                        {
+                            idRoom: selectedRoom + "",
+                            token: getToken() + ""
+                        });
                 },
-                    {
-                        idRoom: selectedRoom + "",
-                        token: getToken() + ""
-                    });
-            },
-            connectHeaders: {
-                Authorization: `Bearer ${getToken()}`
-            }
-        });
+                connectHeaders: {
+                    Authorization: `Bearer ${getToken()}`
+                }
+            });
 
-        stompClient.activate();
-        setClient(stompClient);
+            stompClient.activate();
+            setClient(stompClient);
 
-        return () => {
-            if (stompClient) {
-                stompClient.deactivate();
+            return () => {
+                if (stompClient) {
+                    stompClient.deactivate();
+                }
             }
         }
     }, [selectedRoom, user]);

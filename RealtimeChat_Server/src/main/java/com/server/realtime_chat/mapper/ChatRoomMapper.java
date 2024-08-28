@@ -21,11 +21,14 @@ public interface ChatRoomMapper {
     ChatRoom toEntity(ChatRoomRequest request);
 
     default String getLastMessage(ChatRoom entity) {
-        int size = entity.getMessages().size();
-        if (size > 0) {
-            return entity.getMessages()
-                    .get(entity.getMessages().size() - 1)
-                    .getContent();
+        try {
+            int size = entity.getMessages().size();
+            if (size > 0) {
+                return entity.getMessages()
+                        .get(entity.getMessages().size() - 1)
+                        .getContent();
+            }
+        } catch (Exception e) {
         }
         return null;
     }

@@ -1,5 +1,5 @@
 import axios from "axios";
-import api from "../constants/BaseUrl";
+import { api } from "../constants/BaseUrl";
 import ChatRoom from "../types/ChatRoom";
 import { getToken } from "../services/TokenService";
 
@@ -30,6 +30,17 @@ export const callCreateRoom = async (request: ChatRoom) => {
         method: 'POST',
         url: `${api}/api/chat_room`,
         data: request,
+        headers: {
+            Authorization: `Bearer ${getToken()}`
+        }
+    })
+    return data
+}
+
+export const callSeenAllByIdRoom = async (id: string | number) => {
+    const { data } = await axios({
+        method: 'GET',
+        url: `${api}/api/chat_room/seen_all/${id}`,
         headers: {
             Authorization: `Bearer ${getToken()}`
         }

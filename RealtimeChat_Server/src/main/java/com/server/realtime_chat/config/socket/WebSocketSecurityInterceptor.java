@@ -38,13 +38,35 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
             }
         }
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {
-            isUserInRoom(accessor);
+            String url = accessor.getDestination();
+            if(url.startsWith("/user/")) {
+                verifyUserIdAndToken(accessor);
+            }
+            else if(url.startsWith("/room/")){
+                isUserInRoom(accessor);
+            }else{
+                throw new AppException(ErrorCode.AUTHENTICATION_FAILED);
+            }
         }
         if (StompCommand.SEND.equals(accessor.getCommand())) {
             isUserInRoom(accessor);
         }
 
         return message;
+    }
+
+    private void verifyUserIdAndToken (StompHeaderAccessor accessor) {
+        try {
+            String idUser = accessor.getFirstNativeHeader("idUser");
+            String token = accessor.getFirstNativeHeader("token");
+            User userById = userRepository.findById(Integer.valueOf(idUser)).get();
+            User userByToken = authenticationService.decodeToUser(token);
+            if(!userById.getId().equals(userByToken.getId())){
+                throw new AppException(ErrorCode.AUTHENTICATION_FAILED);
+            }
+        }catch (Exception e) {
+            throw new AppException(ErrorCode.AUTHENTICATION_FAILED);
+        }
     }
 
     private void isUserInRoom(StompHeaderAccessor accessor) {

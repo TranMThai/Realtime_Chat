@@ -1,6 +1,6 @@
 import axios from "axios";
 import User from "../types/User";
-import api from "../constants/BaseUrl";
+import {api} from "../constants/BaseUrl";
 
 export const callAuthenticate = async (request: User) => {
     const { data } = await axios({

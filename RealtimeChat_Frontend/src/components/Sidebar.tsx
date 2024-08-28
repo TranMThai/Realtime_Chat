@@ -1,9 +1,13 @@
 import { Autocomplete, Avatar, Box, Button, List, ListItem, ListItemText, TextField, Typography } from '@mui/material';
+import { Client, IMessage } from '@stomp/stompjs';
 import React, { SetStateAction, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
+import SockJS from 'sockjs-client';
 import { callCreateRoom, callFindAllByIdUser } from '../api/ChatRoomApi';
 import { callFindAllUsersWithoutRoomWithIdUser } from '../api/UserApi';
+import { socketChatApi } from '../constants/BaseUrl';
 import { userSelector } from '../redux/reducer/UserReducer';
+import { getToken } from '../services/TokenService';
 import ChatRoom from '../types/ChatRoom';
 import User from '../types/User';
 
@@ -31,13 +35,41 @@ const Sidebar: React.FC<IProps> = ({ setSelectedRoom }) => {
     useEffect(() => {
         fetchFindAllUsersWithoutRoomWithIdUser()
         fetchFindAllByIdUser()
-    }, [user])
-
+    }, [])
+    
     useEffect(() => {
-        if (chatRooms.length > 0) {
-            setSelectedRoom(chatRooms[0].id ?? 0)
+        fetchFindAllUsersWithoutRoomWithIdUser()
+
+        const sock = SockJS(`${socketChatApi}`)
+        const stompClient = new Client({
+            webSocketFactory: () => sock as WebSocket,
+            onConnect: () => {
+                stompClient.subscribe(`/user/${user.id}`, (chatRooms: IMessage) => {
+                    setChatRooms([...JSON.parse(chatRooms.body)]);
+                },
+                    {
+                        idUser: user.id + "",
+                        token: getToken() + ""
+                    }
+                )
+            },
+            connectHeaders: {
+                Authorization: `Bearer ${getToken()}`
+            },
+            debug: (string) => {
+                console.log(string)
+            }
+        })
+
+        stompClient.activate()
+
+        return () => {
+            if (stompClient) {
+                stompClient.deactivate()
+            }
         }
-    }, [chatRooms])
+
+    }, [user])
 
     const handleChange = (_: React.SyntheticEvent, newValue: User | null) => {
         if (newValue) {
@@ -51,7 +83,6 @@ const Sidebar: React.FC<IProps> = ({ setSelectedRoom }) => {
         }
         const chatRoom: ChatRoom = { idUsers: [user.id ?? 0, selectedUser] }
         await callCreateRoom(chatRoom);
-        await fetchFindAllByIdUser();
         await fetchFindAllUsersWithoutRoomWithIdUser();
     };
 

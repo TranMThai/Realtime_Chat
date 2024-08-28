@@ -7,6 +7,7 @@ import com.server.realtime_chat.service.MessageService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,7 +30,7 @@ public class ChatRoomController {
     MessageService messageService;
 
     @GetMapping("/{id}")
-    public ApiResponse<?> findAllByIdUser(@PathVariable(name = "id") Integer id){
+    public ApiResponse<?> findAllByIdUser(@PathVariable(name = "id") Integer id) {
         return ApiResponse.builder()
                 .result(chatRoomService.findAllByIdUser(id))
                 .build();
@@ -37,16 +38,21 @@ public class ChatRoomController {
 
     @GetMapping("/messages/{id}")
     public ApiResponse<?> findAllMessageByIdRoom(@PathVariable(name = "id") Long id,
-                                                 @RequestHeader("Authorization") String token){
+                                                 @RequestHeader("Authorization") String token) {
         return ApiResponse.builder()
                 .result(messageService.findAllMessageByIdRoom(id, token))
                 .build();
     }
 
     @PostMapping
-    public ApiResponse<?> createRoom(@RequestBody ChatRoomRequest request){
+    public ApiResponse<?> createRoom(@RequestBody ChatRoomRequest request) {
         return ApiResponse.builder()
                 .result(chatRoomService.create(request))
                 .build();
+    }
+
+    @GetMapping("/seen_all/{id}")
+    public void seenAllByIdRoom(@PathVariable(name = "id") Long id) {
+        chatRoomService.seenAllByIdRoom(id);
     }
 }
