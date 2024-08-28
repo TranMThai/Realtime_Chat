@@ -22,15 +22,17 @@ const ChatArea: React.FC<IProps> = ({ selectedRoom }) => {
     const chatBoxRef = useRef<HTMLElement>(null);
 
     const fetchAllMessageByIdRoom = async () => {
-        const { result } = await callFindAllMessageByIdRoom(selectedRoom + "")
-        setMessages([...result])
+        if (selectedRoom != 0) {
+            const { result } = await callFindAllMessageByIdRoom(selectedRoom + "")
+            setMessages([...result])
+        }
     }
 
     useEffect(() => {
 
         fetchAllMessageByIdRoom()
 
-        const sock = new SockJS(`${api}/api/message`);
+        const sock = new SockJS(`${api}/api/chat`);
         const stompClient = new Client({
             webSocketFactory: () => sock as WebSocket,
             onConnect: () => {
@@ -45,12 +47,6 @@ const ChatArea: React.FC<IProps> = ({ selectedRoom }) => {
                         token: getToken() + ""
                     });
             },
-            onStompError: (frame) => {
-                console.log("Lỗi stomp: ", frame)
-            },
-            onWebSocketError: (event) => {
-                console.log('Lỗi WebSocket: ', event);
-            },
             connectHeaders: {
                 Authorization: `Bearer ${getToken()}`
             }
@@ -63,8 +59,8 @@ const ChatArea: React.FC<IProps> = ({ selectedRoom }) => {
             if (stompClient) {
                 stompClient.deactivate();
             }
-        };
-    }, [selectedRoom]);
+        }
+    }, [selectedRoom, user]);
 
     useEffect(() => {
         if (chatBoxRef.current) {

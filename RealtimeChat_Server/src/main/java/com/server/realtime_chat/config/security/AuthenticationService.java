@@ -49,7 +49,8 @@ public class AuthenticationService {
     PasswordEncoder passwordEncoder;
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        User user = userRepository.findByUsername(request.getUsername()).get();
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new AppException(ErrorCode.AUTHENTICATION_FAILED));
         boolean isAuth = passwordEncoder.matches(request.getPassword(), user.getPassword());
         if (isAuth) {
             String token = generateToken(user);
@@ -88,6 +89,9 @@ public class AuthenticationService {
 
     public boolean introspect(String token) {
         try {
+            if(token.startsWith("Bearer ")){
+                token = token.replaceFirst("Bearer ", "");
+            }
             JWSVerifier verifier = new MACVerifier(key.getBytes());
             SignedJWT signed = SignedJWT.parse(token);
             boolean verified = verifier.verify(signed.getHeader(),
@@ -103,7 +107,7 @@ public class AuthenticationService {
 
     public User decodeToUser(String token) {
         try {
-            if(!introspect(token)) {
+            if (!introspect(token)) {
                 throw new AppException(ErrorCode.AUTHENTICATION_FAILED);
             }
 

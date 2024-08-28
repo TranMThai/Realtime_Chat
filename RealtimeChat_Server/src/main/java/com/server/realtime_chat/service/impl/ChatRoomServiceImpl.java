@@ -7,6 +7,7 @@ import com.server.realtime_chat.dto.response.ChatRoomResponse;
 import com.server.realtime_chat.entity.ChatRoom;
 import com.server.realtime_chat.mapper.ChatRoomMapper;
 import com.server.realtime_chat.repository.ChatRoomRepository;
+import com.server.realtime_chat.repository.MessageRepository;
 import com.server.realtime_chat.service.ChatRoomService;
 import com.server.realtime_chat.service.UserService;
 import lombok.AccessLevel;
@@ -26,6 +27,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 
     ChatRoomRepository chatRoomRepository;
     ChatRoomMapper chatRoomMapper;
+    MessageRepository messageRepository;
     UserService userService;
 
     @Override
@@ -39,7 +41,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return chatRoomRepository.findAllByIdUser(id.toString()).stream()
                 .map(entity -> {
                     String name = resolveChatPartnerName(entity.getIdUsers(), id);
-                    return chatRoomMapper.toDto(entity, name);
+                    return chatRoomMapper.toDto(entity, name, messageRepository.coutUnSeenMessageByIdRoom(entity.getId()));
                 })
                 .toList();
     }
@@ -62,7 +64,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         }
         ChatRoom entity = chatRoomMapper.toEntity(request);
         ChatRoom save = chatRoomRepository.save(entity);
-        ChatRoomResponse response = chatRoomMapper.toDto(save, null);
+        ChatRoomResponse response = chatRoomMapper.toDto(save, null, messageRepository.coutUnSeenMessageByIdRoom(entity.getId()));
         return response;
     }
 

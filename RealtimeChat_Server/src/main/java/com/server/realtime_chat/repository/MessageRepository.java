@@ -14,4 +14,10 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
             "FROM Message m " +
             "WHERE m.chatRoom.id = :id")
     List<Message> findAllByIdRoom(@Param("id") Long id);
+
+    @Query(value = "SELECT COUNT(m) " +
+            "FROM Message m " +
+            "WHERE m.chatRoom.id = :id " +
+            "AND m.isSeen = false")
+    Integer coutUnSeenMessageByIdRoom(@Param("id") Long id);
 }

@@ -21,4 +21,6 @@ public class ChatRoomResponse {
 
     private String lastMessage;
 
+    private Integer unseenMessageCount;
+
 }

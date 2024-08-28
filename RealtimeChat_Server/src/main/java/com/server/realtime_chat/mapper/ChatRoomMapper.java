@@ -8,12 +8,13 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring")
 public interface ChatRoomMapper {
 
-    default ChatRoomResponse toDto(ChatRoom entity, String nameReceiver) {
+    default ChatRoomResponse toDto(ChatRoom entity, String nameReceiver, Integer unseenMessageCount) {
         return ChatRoomResponse.builder()
                 .id(entity.getId())
                 .idUsers(entity.getIdUsers())
                 .nameReceiver(nameReceiver)
                 .lastMessage(getLastMessage(entity))
+                .unseenMessageCount(unseenMessageCount)
                 .build();
     }
 

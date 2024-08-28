@@ -15,7 +15,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/api/message")
+        registry.addEndpoint("/api/chat")
                 .setAllowedOrigins("http://localhost:5173")
                 .withSockJS();
     }
@@ -23,8 +23,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.setApplicationDestinationPrefixes("/app");
-        registry.enableSimpleBroker("/room/", "/user/");
-        registry.setUserDestinationPrefix("/user");
+        registry.enableSimpleBroker("/room/");
     }
 
     @Override

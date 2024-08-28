@@ -15,4 +15,9 @@ public class GlobalExceptionHandler {
                         .message(e.getErrorCode().getMessage())
                         .build());
     }
+    @ExceptionHandler(value = NullPointerException.class)
+    public ResponseEntity<?> handlingNullPointerException(NullPointerException e) {
+        return ResponseEntity.noContent()
+                .build();
+    }
 }

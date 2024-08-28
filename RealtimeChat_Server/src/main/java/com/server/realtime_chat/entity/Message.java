@@ -1,6 +1,7 @@
 package com.server.realtime_chat.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,9 +28,11 @@ public class Message {
 
     private Integer idSender;
 
+    @Column(columnDefinition = "TEXT")
     private String content;
 
-    @JsonIgnore
+    private Boolean isSeen;
+
     @JoinColumn(name = "id_room")
     @ManyToOne
     private ChatRoom chatRoom;

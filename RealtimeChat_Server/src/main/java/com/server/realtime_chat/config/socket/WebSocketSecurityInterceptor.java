@@ -33,7 +33,6 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
 
         if (StompCommand.CONNECT.equals(accessor.getCommand())) {
             String token = accessor.getFirstNativeHeader("Authorization") + "";
-            token = removeBearer(token);
             if (token.length() == 0 || !authenticationService.introspect(token)) {
                 throw new AppException(ErrorCode.AUTHENTICATION_FAILED);
             }
@@ -46,10 +45,6 @@ public class WebSocketSecurityInterceptor implements ChannelInterceptor {
         }
 
         return message;
-    }
-
-    private String removeBearer(String token) {
-        return token.replaceFirst("Bearer ", "");
     }
 
     private void isUserInRoom(StompHeaderAccessor accessor) {

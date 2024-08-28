@@ -1,5 +1,5 @@
-import { Autocomplete, Avatar, Button, List, ListItem, ListItemText, TextField, Typography } from '@mui/material';
-import React, { SetStateAction, useEffect, useState } from 'react';
+import { Autocomplete, Avatar, Box, Button, List, ListItem, ListItemText, TextField, Typography } from '@mui/material';
+import React, { SetStateAction, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { callCreateRoom, callFindAllByIdUser } from '../api/ChatRoomApi';
 import { callFindAllUsersWithoutRoomWithIdUser } from '../api/UserApi';
@@ -16,6 +16,7 @@ const Sidebar: React.FC<IProps> = ({ setSelectedRoom }) => {
     const [chatRooms, setChatRooms] = useState<ChatRoom[]>([])
     const [users, setUsers] = useState<User[]>([])
     const [selectedUser, setSelectedUser] = useState<number>(0)
+    const autocompleteRef = useRef<HTMLInputElement>(null);
 
 
     const fetchFindAllUsersWithoutRoomWithIdUser = async () => {
@@ -45,6 +46,9 @@ const Sidebar: React.FC<IProps> = ({ setSelectedRoom }) => {
     };
 
     const handleAddRoom = async () => {
+        if (autocompleteRef.current) {
+            autocompleteRef.current.value = "";
+        }
         const chatRoom: ChatRoom = { idUsers: [user.id ?? 0, selectedUser] }
         await callCreateRoom(chatRoom);
         await fetchFindAllByIdUser();
@@ -64,7 +68,9 @@ const Sidebar: React.FC<IProps> = ({ setSelectedRoom }) => {
                     <Autocomplete
                         disablePortal
                         size='small'
+                        value={null}
                         options={users}
+                        ref={autocompleteRef}
                         getOptionLabel={option => option.name + ""}
                         getOptionKey={option => option.id ?? -1}
                         sx={{ width: 300, mr: 2 }}
@@ -83,7 +89,32 @@ const Sidebar: React.FC<IProps> = ({ setSelectedRoom }) => {
                             sx={{
                                 mr: 1
                             }} />
-                        <ListItemText primary={cr.nameReceiver} secondary={cr.lastMessage} />
+                        <ListItemText primary={cr.nameReceiver} secondary={cr.lastMessage}
+                            sx={{
+                                overflow: 'hidden',
+                                textWrap: 'nowrap'
+                            }} />
+                        {
+                            ((cr.unseenMessageCount ?? 0) > 0) &&
+                            <Box
+                                sx={{
+                                    position: 'absolute',
+                                    left: 40,
+                                    top: 10,
+                                    backgroundColor: 'red',
+                                    color: 'white',
+                                    borderRadius: '50%',
+                                    fontSize: '14px',
+                                    width: 20,
+                                    height: 20,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                }}
+                            >
+                                {(cr.unseenMessageCount ?? 0) > 9 ? "9+" : cr.unseenMessageCount}
+                            </Box>
+                        }
                     </ListItem>
                 ))}
 

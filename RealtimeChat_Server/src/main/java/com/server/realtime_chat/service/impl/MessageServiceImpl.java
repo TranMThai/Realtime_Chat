@@ -2,8 +2,11 @@ package com.server.realtime_chat.service.impl;
 
 import com.server.realtime_chat.config.exception.AppException;
 import com.server.realtime_chat.config.exception.ErrorCode;
+import com.server.realtime_chat.config.security.AuthenticationService;
 import com.server.realtime_chat.dto.response.MessageResponse;
+import com.server.realtime_chat.entity.ChatRoom;
 import com.server.realtime_chat.entity.Message;
+import com.server.realtime_chat.entity.User;
 import com.server.realtime_chat.mapper.MessageMapper;
 import com.server.realtime_chat.repository.ChatRoomRepository;
 import com.server.realtime_chat.repository.MessageRepository;
@@ -20,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService {
 
+    AuthenticationService authenticationService;
     MessageRepository messageRepository;
     ChatRoomRepository chatRoomRepository;
     MessageMapper messageMapper;
@@ -27,14 +31,26 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public Message create(Message message) {
         chatRoomRepository.findById(message.getChatRoom().getId())
-                .orElseThrow(()-> new AppException(ErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
+        message.setIsSeen(false);
         return messageRepository.save(message);
     }
 
     @Override
-    public List<MessageResponse> findAllMessageByIdRoom(Long id) {
-        return messageRepository.findAllByIdRoom(id).stream()
-                .map(messageMapper::toDto)
-                .toList();
+    public List<MessageResponse> findAllMessageByIdRoom(Long id, String token) {
+        User user = authenticationService.decodeToUser(token);
+        ChatRoom chatRoom = chatRoomRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.NOT_FOUND));
+        if (!chatRoom.getIdUsers().contains(user.getId())){
+            throw new AppException(ErrorCode.AUTHENTICATION_FAILED);
+        }
+            return messageRepository.findAllByIdRoom(id).stream()
+                    .map(messageMapper::toDto)
+                    .toList();
+    }
+
+    @Override
+    public Integer coutUnSeenMessageByIdRoom(Long id) {
+        return messageRepository.coutUnSeenMessageByIdRoom(id);
     }
 }
