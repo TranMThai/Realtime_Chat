@@ -3,7 +3,7 @@ package com.server.realtime_chat.service.impl;
 import com.server.realtime_chat.config.exception.AppException;
 import com.server.realtime_chat.config.exception.ErrorCode;
 import com.server.realtime_chat.config.security.AuthenticationService;
-import com.server.realtime_chat.dto.response.ChatRoomResponse;
+import com.server.realtime_chat.config.socket.WebSocketService;
 import com.server.realtime_chat.dto.response.MessageResponse;
 import com.server.realtime_chat.entity.ChatRoom;
 import com.server.realtime_chat.entity.Message;
@@ -16,10 +16,7 @@ import com.server.realtime_chat.service.MessageService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.messaging.MessageDeliveryException;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -28,7 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MessageServiceImpl implements MessageService {
 
-    SimpMessagingTemplate messagingTemplate;
+    WebSocketService webSocketService;
     AuthenticationService authenticationService;
     MessageRepository messageRepository;
     ChatRoomRepository chatRoomRepository;
@@ -61,21 +58,12 @@ public class MessageServiceImpl implements MessageService {
                 .toList();
     }
 
-    @Override
-    public Integer coutUnSeenMessageByIdRoom(Long id) {
-        return messageRepository.coutUnSeenMessageByIdRoom(id);
-    }
-
     private void notification(Message message) {
         List<Integer> idReceivers = message.getChatRoom().getIdUsers().stream()
                 .filter(id -> !id.equals(message.getIdSender()))
                 .toList();
-        for (Integer idReceiver : idReceivers) {
-            try {
-                String url = "/user/" + idReceiver;
-                List<ChatRoomResponse> responses = chatRoomService.findAllByIdUser(idReceiver);
-                messagingTemplate.convertAndSend(url, responses);
-            }catch (MessageDeliveryException e){}
+        for (Integer id : idReceivers) {
+            webSocketService.responseRealtime("/user/" + id, chatRoomService.findAllByIdUser(id));
         }
     }
 }

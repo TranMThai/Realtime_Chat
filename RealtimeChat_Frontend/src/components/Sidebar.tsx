@@ -12,7 +12,7 @@ import ChatRoom from '../types/ChatRoom';
 import User from '../types/User';
 
 interface IProps {
-    setSelectedRoom: React.Dispatch<SetStateAction<number | string>>
+    setSelectedRoom: React.Dispatch<SetStateAction<number>>
 }
 
 const Sidebar: React.FC<IProps> = ({ setSelectedRoom }) => {
@@ -34,16 +34,14 @@ const Sidebar: React.FC<IProps> = ({ setSelectedRoom }) => {
 
     useEffect(() => {
         fetchFindAllUsersWithoutRoomWithIdUser()
-        fetchFindAllByIdUser()
-    }, [])
-    
-    useEffect(() => {
-        fetchFindAllUsersWithoutRoomWithIdUser()
 
         const sock = SockJS(`${socketChatApi}`)
         const stompClient = new Client({
             webSocketFactory: () => sock as WebSocket,
             onConnect: () => {
+                fetchFindAllUsersWithoutRoomWithIdUser()
+                fetchFindAllByIdUser()
+                console.log("hello")
                 stompClient.subscribe(`/user/${user.id}`, (chatRooms: IMessage) => {
                     setChatRooms([...JSON.parse(chatRooms.body)]);
                 },
@@ -126,7 +124,7 @@ const Sidebar: React.FC<IProps> = ({ setSelectedRoom }) => {
                                 textWrap: 'nowrap'
                             }} />
                         {
-                            ((cr.unseenMessageCount ?? 0) > 0) &&
+                            ((cr.unseenMessageCount ?? 0) > 0 && cr.idLastSender != user.id) &&
                             <Box
                                 sx={{
                                     position: 'absolute',

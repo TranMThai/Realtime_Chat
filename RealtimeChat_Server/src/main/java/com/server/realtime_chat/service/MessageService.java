@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface MessageService {
     Message create(Message message);
+
     List<MessageResponse> findAllMessageByIdRoom(Long id, String token);
-    Integer coutUnSeenMessageByIdRoom(Long id);
 }

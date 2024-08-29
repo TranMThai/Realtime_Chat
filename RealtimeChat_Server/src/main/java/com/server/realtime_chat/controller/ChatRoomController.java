@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -51,8 +52,9 @@ public class ChatRoomController {
                 .build();
     }
 
-    @GetMapping("/seen_all/{id}")
-    public void seenAllByIdRoom(@PathVariable(name = "id") Long id) {
-        chatRoomService.seenAllByIdRoom(id);
+    @GetMapping("/seen_all")
+    public void seenAllByIdRoom(@RequestParam(name = "idRoom") Long idRoom,
+                                @RequestParam(name = "idUser") Integer idUser) {
+        chatRoomService.seenAllByIdRoom(idRoom, idUser);
     }
 }

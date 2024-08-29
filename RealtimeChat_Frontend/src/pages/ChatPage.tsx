@@ -17,7 +17,7 @@ const ChatApp: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector(userSelector);
-  const [selectedRoom, setSelectedRoom] = useState<number|string>(0)
+  const [selectedRoom, setSelectedRoom] = useState<number>(0)
 
   useEffect(() => {
     const token = getToken();

@@ -23,4 +23,6 @@ public class ChatRoomResponse {
 
     private Integer unseenMessageCount;
 
+    private Integer idLastSender;
+
 }

@@ -17,4 +17,6 @@ public class MessageResponse {
 
     private String content;
 
+    private Boolean isSeen;
+
 }

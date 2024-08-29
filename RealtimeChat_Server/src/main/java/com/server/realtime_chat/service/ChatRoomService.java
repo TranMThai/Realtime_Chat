@@ -10,5 +10,5 @@ public interface ChatRoomService {
     ChatRoom findById(Long id);
     List<ChatRoomResponse> findAllByIdUser(Integer id);
     ChatRoomResponse create(ChatRoomRequest request);
-    void seenAllByIdRoom(Long idRoom);
+    void seenAllByIdRoom(Long idRoom, Integer idUser);
 }

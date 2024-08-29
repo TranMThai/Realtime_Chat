@@ -37,10 +37,14 @@ export const callCreateRoom = async (request: ChatRoom) => {
     return data
 }
 
-export const callSeenAllByIdRoom = async (id: string | number) => {
+export const callSeenAllByIdRoom = async (idRoom: string | number, idUser: string | number) => {
     const { data } = await axios({
         method: 'GET',
-        url: `${api}/api/chat_room/seen_all/${id}`,
+        url: `${api}/api/chat_room/seen_all`,
+        params: {
+            idRoom: idRoom,
+            idUser: idUser
+        },
         headers: {
             Authorization: `Bearer ${getToken()}`
         }

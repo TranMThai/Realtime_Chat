@@ -2,10 +2,12 @@ package com.server.realtime_chat.service.impl;
 
 import com.server.realtime_chat.config.exception.AppException;
 import com.server.realtime_chat.config.exception.ErrorCode;
+import com.server.realtime_chat.config.socket.WebSocketService;
 import com.server.realtime_chat.dto.request.ChatRoomRequest;
 import com.server.realtime_chat.dto.response.ChatRoomResponse;
 import com.server.realtime_chat.entity.ChatRoom;
 import com.server.realtime_chat.mapper.ChatRoomMapper;
+import com.server.realtime_chat.mapper.MessageMapper;
 import com.server.realtime_chat.repository.ChatRoomRepository;
 import com.server.realtime_chat.repository.MessageRepository;
 import com.server.realtime_chat.service.ChatRoomService;
@@ -13,8 +15,6 @@ import com.server.realtime_chat.service.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.messaging.MessageDeliveryException;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,11 +24,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatRoomServiceImpl implements ChatRoomService {
 
-    SimpMessagingTemplate messagingTemplate;
+    WebSocketService webSocketService;
     ChatRoomRepository chatRoomRepository;
     ChatRoomMapper chatRoomMapper;
     MessageRepository messageRepository;
     UserService userService;
+    MessageMapper messageMapper;
 
     @Override
     public ChatRoom findById(Long id) {
@@ -41,7 +42,15 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         return chatRoomRepository.findAllByIdUser(id.toString()).stream()
                 .map(entity -> {
                     String name = resolveChatPartnerName(entity.getIdUsers(), id);
-                    return chatRoomMapper.toDto(entity, name, messageRepository.coutUnSeenMessageByIdRoom(entity.getId()));
+                    try {
+                        Integer messageIndex = entity.getMessages().size() - 1;
+                        Integer lastIdSender = entity.getMessages()
+                                .get(messageIndex)
+                                .getIdSender();
+                        return chatRoomMapper.toDto(entity, name, messageRepository.coutUnSeenMessageByIdRoom(entity.getId(), lastIdSender), lastIdSender);
+                    } catch (Exception e) {
+                        return chatRoomMapper.toDto(entity, name, 0, null);
+                    }
                 })
                 .toList();
     }
@@ -64,26 +73,19 @@ public class ChatRoomServiceImpl implements ChatRoomService {
         }
         ChatRoom entity = chatRoomMapper.toEntity(request);
         ChatRoom save = chatRoomRepository.save(entity);
-        realtime(request.getIdUsers());
-        ChatRoomResponse response = chatRoomMapper.toDto(save, null, messageRepository.coutUnSeenMessageByIdRoom(entity.getId()));
+        for (Integer id : request.getIdUsers()) {
+            webSocketService.responseRealtime("/user/" + id, findAllByIdUser(id));
+        }
+        ChatRoomResponse response = chatRoomMapper.toDto(save, null, 0, null);
         return response;
     }
 
     @Override
-    public void seenAllByIdRoom(Long id) {
-        chatRoomRepository.seenAllByIdRoom(id);
-        List<Integer> idUsers = findById(id).getIdUsers();
-        realtime(idUsers);
-    }
-
-    private void realtime(List<Integer> idUsers) {
-        try {
-            for (Integer idUser : idUsers) {
-                String url = "/user/" + idUser;
-                List<ChatRoomResponse> responses = findAllByIdUser(idUser);
-                messagingTemplate.convertAndSend(url, responses);
-            }
-        } catch (MessageDeliveryException e) {
+    public void seenAllByIdRoom(Long idRoom, Integer idUser) {
+        chatRoomRepository.seenAllByIdRoom(idRoom, idUser);
+        List<Integer> idUsers = findById(idRoom).getIdUsers();
+        for (Integer id : idUsers) {
+            webSocketService.responseRealtime("/user/" + id, findAllByIdUser(id));
         }
     }
 

@@ -23,7 +23,9 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
     @Transactional
     @Query(value = "UPDATE message m " +
             "SET m.is_seen = true " +
-            "WHERE m.id_room = :id",
+            "WHERE m.id_room = :idRoom " +
+            "AND m.id_sender <> :idUser",
             nativeQuery = true)
-    void seenAllByIdRoom(@Param("id") Long id);
+    void seenAllByIdRoom(@Param("idRoom") Long idRoom,
+                         @Param("idUser") Integer idUser);
 }

@@ -3,7 +3,8 @@ type ChatRoom = {
     idUsers: number[],
     nameReceiver?: string,
     lastMessage?: string,
-    unseenMessageCount?: number
+    unseenMessageCount?: number,
+    idLastSender?: number
 }
 
 export default ChatRoom

@@ -30,19 +30,18 @@ const ChatArea: React.FC<IProps> = ({ selectedRoom }) => {
 
     const seenAll = async () => {
         try {
-            await callSeenAllByIdRoom(selectedRoom);
+            await callSeenAllByIdRoom(selectedRoom, user.id + '');
         } catch (error) {
             console.error("Error marking messages as seen:", error);
         }
     };
-    console.log(selectedRoom)
+    
     useEffect(() => {
         if (selectedRoom > 0) {
 
             fetchAllMessageByIdRoom()
-            seenAll()
 
-            const sock = new SockJS(`${socketChatApi}`);
+            const sock = new SockJS(socketChatApi);
             const stompClient = new Client({
                 webSocketFactory: () => sock as WebSocket,
                 onConnect: () => {
@@ -76,6 +75,9 @@ const ChatArea: React.FC<IProps> = ({ selectedRoom }) => {
     useEffect(() => {
         if (chatBoxRef.current) {
             chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
+        }
+        if (selectedRoom > 0) {
+            seenAll()
         }
     }, [messages])
 
